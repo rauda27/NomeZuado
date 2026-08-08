@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PicaTracker 3000 🍆 - O Rastreador Definitivo</title>
+    <meta name="description" content="O contador e rastreador de picas mais avançado, divertido e elegante da web. Registre, acompanhe estatísticas, conquiste patentes e divirta-se!">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- Canvas Confetti CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Background Animated Canvas -->
+    <canvas id="bgCanvas"></canvas>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-group">
+                <span class="logo-icon">🍆</span>
+                <div class="logo-text">
+                    <h1>PicaTracker <span class="badge-version">v3.0 Ultra</span></h1>
+                    <p class="subtitle">O Contador e Rastreador Definitivo</p>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <button id="soundToggleBtn" class="icon-btn" title="Alternar Som (Ligado/Desligado)">
+                    <span id="soundIcon">🔊</span>
+                </button>
+                <button id="themeToggleBtn" class="icon-btn" title="Alternar Tema Glow/Cyber">
+                    <span>✨</span>
+                </button>
+                <button id="exportBtn" class="icon-btn" title="Exportar / Backup de Dados">
+                    <span>💾</span>
+                </button>
+                <button id="importBtn" class="icon-btn" title="Importar Dados">
+                    <span>📂</span>
+                </button>
+                <input type="file" id="importFileInput" accept=".json" style="display: none;">
+            </div>
+        </header>
+
+        <!-- Current Rank Bar -->
+        <div class="rank-banner-card">
+            <div class="rank-info">
+                <div class="rank-badge-icon" id="rankBadgeIcon">🐣</div>
+                <div class="rank-details">
+                    <span class="rank-label">PATENTE ATUAL</span>
+                    <h3 class="rank-title" id="rankTitle">Novato Curioso</h3>
+                    <p class="rank-sub" id="rankSub">Faltam <strong id="rankNextCount">5</strong> para a próxima patente!</p>
+                </div>
+            </div>
+            <div class="rank-progress-wrapper">
+                <div class="rank-progress-bar">
+                    <div class="rank-progress-fill" id="rankProgressFill" style="width: 0%;"></div>
+                </div>
+                <span class="rank-xp-text" id="rankXpText">0 / 5 XP</span>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-tab="tab-counter">
+                <span class="tab-icon">⚡</span> Contador
+            </button>
+            <button class="nav-tab" data-tab="tab-stats">
+                <span class="tab-icon">📊</span> Estatísticas
+            </button>
+            <button class="nav-tab" data-tab="tab-achievements">
+                <span class="tab-icon">🏆</span> Conquistas & Patentes
+            </button>
+            <button class="nav-tab" data-tab="tab-history">
+                <span class="tab-icon">📜</span> Histórico
+            </button>
+        </nav>
+
+        <!-- Main Content Body -->
+        <main class="main-content">
+
+            <!-- TAB 1: MAIN COUNTER -->
+            <section id="tab-counter" class="tab-page active">
+                <div class="counter-hero-card">
+                    <div class="daily-streak-badge" title="Dias seguidos com registro!">
+                        <span class="fire-icon">🔥</span> Streak: <strong id="streakCount">0</strong> dias
+                    </div>
+
+                    <div class="counter-display-wrapper">
+                        <div class="counter-number-glow" id="counterNumber">0</div>
+                        <span class="counter-unit">picas contabilizadas</span>
+                    </div>
+
+                    <!-- Giant Pulse Counter Button -->
+                    <div class="main-btn-container">
+                        <button id="mainCountBtn" class="giant-count-btn">
+                            <span class="btn-inner-glow"></span>
+                            <span class="btn-content">
+                                <span class="btn-emoji">🍆</span>
+                                <span class="btn-label">+1 PICA LOGADA!</span>
+                            </span>
+                        </button>
+                    </div>
+
+                    <!-- Quick Add & Subtract Controls -->
+                    <div class="quick-controls">
+                        <button class="btn-secondary quick-add-btn" data-amount="1">+1 Rápido</button>
+                        <button class="btn-secondary quick-add-btn" data-amount="2">+2 Combo</button>
+                        <button class="btn-secondary quick-add-btn" data-amount="5">+5 Maratona</button>
+                        <button class="btn-secondary" id="customAddBtn">Custom</button>
+                        <button class="btn-secondary danger-btn" id="decrementBtn" title="Diminuir 1">-1</button>
+                    </div>
+
+                    <!-- Quote / Daily Wisdom Box -->
+                    <div class="wisdom-box">
+                        <div class="wisdom-header">
+                            <span class="wisdom-icon">💡</span>
+                            <span>Sabedoria do Contador:</span>
+                            <button id="newQuoteBtn" class="btn-link">Outra Frase 🔄</button>
+                        </div>
+                        <p id="wisdomQuoteText" class="wisdom-text">"Tamanho não é documento, mas o PicaTracker conta tudo com precisão!"</p>
+                    </div>
+                </div>
+
+                <!-- Goal Tracker Widget -->
+                <div class="card goal-card">
+                    <div class="card-header">
+                        <h3>🎯 Meta do Mês</h3>
+                        <button id="setGoalBtn" class="btn-sm">Ajustar Meta</button>
+                    </div>
+                    <div class="goal-body">
+                        <div class="goal-progress-circle-wrapper">
+                            <svg class="goal-svg" viewBox="0 0 100 100">
+                                <circle class="goal-bg-circle" cx="50" cy="50" r="42"></circle>
+                                <circle class="goal-fill-circle" id="goalFillCircle" cx="50" cy="50" r="42" stroke-dasharray="264" stroke-dashoffset="264"></circle>
+                            </svg>
+                            <div class="goal-percentage-text" id="goalPercentText">0%</div>
+                        </div>
+                        <div class="goal-details">
+                            <h4 id="goalStatusText">0 de 10 picas este mês</h4>
+                            <p class="text-muted" id="goalSubText">Faltam 10 picas para bater a meta mensal!</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: STATS & CHARTS -->
+            <section id="tab-stats" class="tab-page">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">📈</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Total Geral</span>
+                            <h2 class="stat-value" id="statTotal">0</h2>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📅</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Hoje</span>
+                            <h2 class="stat-value" id="statToday">0</h2>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🗓️</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Esta Semana</span>
+                            <h2 class="stat-value" id="statWeek">0</h2>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⚡</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Recorde em 1 Dia</span>
+                            <h2 class="stat-value" id="statRecord">0</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart Card -->
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <h3>📊 Histórico Gráfico (Últimos 7 Dias)</h3>
+                        <div class="chart-period-selector">
+                            <button class="period-btn active" data-period="7">7 dias</button>
+                            <button class="period-btn" data-period="30">30 dias</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="statsChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Fun Curiosities & Conversion Card -->
+                <div class="card fun-facts-card">
+                    <div class="card-header">
+                        <h3>🧪 Curiosidades Estatísticas</h3>
+                    </div>
+                    <div class="fun-facts-list" id="funFactsList">
+                        <div class="fun-fact-item">
+                            <span class="fact-emoji">📏</span>
+                            <div>
+                                <strong>Torre de Picas:</strong>
+                                <p id="factHeight">Se enfileiradas (méd. 15cm), seu total mediria 0.00 metros!</p>
+                            </div>
+                        </div>
+                        <div class="fun-fact-item">
+                            <span class="fact-emoji">🚀</span>
+                            <div>
+                                <strong>Comparativo Espacial:</strong>
+                                <p id="factSpace">Equivale a 0% da altura do Monte Everest.</p>
+                            </div>
+                        </div>
+                        <div class="fun-fact-item">
+                            <span class="fact-emoji">⏱️</span>
+                            <div>
+                                <strong>Frequência Estimada:</strong>
+                                <p id="factFrequency">Você registra uma média de 0.0 picas por dia.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: ACHIEVEMENTS & PATENTS -->
+            <section id="tab-achievements" class="tab-page">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🎖️ Quadro de Patentes</h3>
+                    </div>
+                    <div class="patents-list" id="patentsList">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 1.5rem;">
+                    <div class="card-header">
+                        <h3>🏆 Conquistas Desbloqueáveis (<span id="achievementsCount">0/12</span>)</h3>
+                    </div>
+                    <div class="achievements-grid" id="achievementsGrid">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: HISTORY & LOGS -->
+            <section id="tab-history" class="tab-page">
+                <div class="card">
+                    <div class="card-header history-header">
+                        <h3>📜 Histórico de Registros</h3>
+                        <div class="history-actions">
+                            <input type="text" id="historySearch" placeholder="🔍 Buscar notas ou tags..." class="search-input">
+                            <button id="clearAllHistoryBtn" class="btn-secondary danger-btn btn-sm">Limpar Tudo</button>
+                        </div>
+                    </div>
+                    <div class="history-list-wrapper">
+                        <div id="historyEmptyState" class="empty-state">
+                            <span class="empty-icon">📭</span>
+                            <p>Nenhuma pica registrada ainda. Clique no botão principal para começar!</p>
+                        </div>
+                        <div id="historyTimeline" class="history-timeline">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>PicaTracker 3000 &copy; 2026 • Feito com 💜 & 🍆 • 100% Privado (Dados salvos apenas no seu navegador)</p>
+        </footer>
+    </div>
+
+    <!-- MODAL: ADD DETAILED LOG -->
+    <div id="logModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>🍆 Detalhar Registro</h3>
+                <button class="close-modal-btn" id="closeLogModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Quantidade:</label>
+                    <input type="number" id="modalAmount" value="1" min="1" max="100" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label>Tags Rápidas:</label>
+                    <div class="tags-selector" id="tagsSelector">
+                        <button type="button" class="tag-btn" data-tag="🔥 Lendária">🔥 Lendária</button>
+                        <button type="button" class="tag-btn" data-tag="⚡ Rápida">⚡ Rápida</button>
+                        <button type="button" class="tag-btn" data-tag="💎 Inesquecível">💎 Inesquecível</button>
+                        <button type="button" class="tag-btn" data-tag="🎯 Meta">🎯 Meta</button>
+                        <button type="button" class="tag-btn" data-tag="🌶️ Apimentada">🌶️ Apimentada</button>
+                        <button type="button" class="tag-btn" data-tag="🏆 Recorde">🏆 Recorde</button>
+                        <button type="button" class="tag-btn" data-tag="🕺 Reboleichon">🕺 Reboleichon</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Avaliação (Estrelas):</label>
+                    <div class="star-rating" id="modalStarRating">
+                        <span class="star" data-rating="1">★</span>
+                        <span class="star" data-rating="2">★</span>
+                        <span class="star" data-rating="3">★</span>
+                        <span class="star" data-rating="4">★</span>
+                        <span class="star active" data-rating="5">★</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Notas / Observações:</label>
+                    <textarea id="modalNotes" placeholder="Escreva algum detalhe inesquecível sobre este momento..." rows="3" class="form-input"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancelLogBtn">Cancelar</button>
+                <button class="btn-primary" id="saveLogBtn">Salvar no Histórico 🎉</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: SET GOAL -->
+    <div id="goalModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>🎯 Ajustar Meta Mensal</h3>
+                <button class="close-modal-btn" id="closeGoalModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Quantas picas deseja registrar por mês?</label>
+                    <input type="number" id="goalInput" value="10" min="1" max="1000" class="form-input">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancelGoalBtn">Cancelar</button>
+                <button class="btn-primary" id="saveGoalBtn">Salvar Meta 🚀</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- App Logic Script -->
+    <script src="app.js"></script>
+</body>
+</html>
